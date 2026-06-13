@@ -17,7 +17,6 @@
 
 <script>
 var DONOR_ID = {{ donor_id }};
-var bloodColors = {'A+':'#222222','B+':'#222222','O+':'#222222','AB+':'#222222','A-':'#222222','B-':'#222222','O-':'#222222','AB-':'#222222'};
 
 fetch('/api/donors/' + DONOR_ID)
     .then(function(r) { return r.json(); })
@@ -26,8 +25,6 @@ fetch('/api/donors/' + DONOR_ID)
             document.getElementById('donorDetail').innerHTML = '<p class="no-results">Donor not found. <a href="/donors" class="text-primary">Go back</a></p>';
             return;
         }
-
-        var c = bloodColors[d.blood_group] || '#2563EB';
 
         document.getElementById('donorDetail').innerHTML =
             '<div class="detail-header">' +

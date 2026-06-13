@@ -1,15 +1,9 @@
-# ============================================================
-# BloodLife - Blood Donation Website (MySQL Database Version)
-# ============================================================
-
 import pymysql
 from flask import Flask, render_template, request, jsonify, session, redirect
 
-# --- App Setup ---
 app = Flask(__name__)
 app.secret_key = 'bloodlife-secret-key-2026'
 
-# --- Database Config ---
 DB_CONFIG = {
     'host': 'localhost',
     'user': 'root',
@@ -19,7 +13,6 @@ DB_CONFIG = {
     'cursorclass': pymysql.cursors.DictCursor
 }
 
-# --- Admin Credentials (from database) ---
 ADMIN_USER = 'admin'
 ADMIN_PASS = 'admin123'
 
@@ -27,10 +20,6 @@ ADMIN_PASS = 'admin123'
 def get_db():
     return pymysql.connect(**DB_CONFIG)
 
-
-# =====================
-# PAGE ROUTES (HTML)
-# =====================
 
 @app.route('/')
 def home():
@@ -58,17 +47,14 @@ def admin_dashboard():
         return redirect('/admin')
     return render_template('dashboard.html')
 
-# =====================
-# API ROUTES (JSON)
-# =====================
 
 @app.route('/api/stats')
 def api_stats():
     conn = get_db()
     try:
         with conn.cursor() as cur:
-            cur.execute("SELECT COUNT(*) as total, SUM(is_available) as available FROM donors")
-            row = cur.fetchone()
+            cur.execute("SELECT COUNT(*) as total FROM donors")
+            total = cur.fetchone()['total'] or 0
 
             cur.execute("SELECT blood_group, COUNT(*) as count FROM donors GROUP BY blood_group")
             blood_counts = {r['blood_group']: r['count'] for r in cur.fetchall()}
@@ -76,12 +62,7 @@ def api_stats():
             cur.execute("SELECT DISTINCT location FROM donors")
             locations = [r['location'] for r in cur.fetchall()]
 
-        return jsonify({
-            'total': row['total'] or 0,
-            'available': int(row['available'] or 0),
-            'locations': locations,
-            'blood_counts': blood_counts
-        })
+        return jsonify({'total': total, 'available': total, 'locations': locations, 'blood_counts': blood_counts})
     finally:
         conn.close()
 
@@ -137,23 +118,13 @@ def api_add_donor():
     try:
         with conn.cursor() as cur:
             cur.execute(
-                """INSERT INTO donors (name, blood_group, phone, email, location, address, message, age, gender)
-                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-                (
-                    data['name'],
-                    data['blood_group'],
-                    data['phone'],
-                    data.get('email', ''),
-                    data['location'],
-                    data.get('address', ''),
-                    data.get('message', ''),
-                    data.get('age'),
-                    data.get('gender', '')
-                )
+                "INSERT INTO donors (name, blood_group, phone, email, location, message, age, gender) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+                (data['name'], data['blood_group'], data['phone'],
+                 data.get('email', ''), data['location'],
+                 data.get('message', ''), data.get('age'), data.get('gender', ''))
             )
             conn.commit()
-            donor_id = cur.lastrowid
-        return jsonify({'message': 'Donor registered successfully!', 'id': donor_id}), 201
+        return jsonify({'message': 'Donor registered successfully!', 'id': cur.lastrowid}), 201
     finally:
         conn.close()
 
@@ -171,9 +142,6 @@ def api_delete_donor(donor_id):
     finally:
         conn.close()
 
-# =====================
-# ADMIN LOGIN/LOGOUT
-# =====================
 
 @app.route('/api/login', methods=['POST'])
 def api_login():
@@ -188,15 +156,8 @@ def api_logout():
     session.clear()
     return jsonify({'message': 'Logged out'})
 
-# =====================
-# RUN
-# =====================
 
 if __name__ == '__main__':
-    print("\n" + "=" * 50)
-    print("  BloodLife - MySQL Database Version")
-    print("  Open: http://localhost:5000")
-    print("  Admin: http://localhost:5000/admin")
-    print("  Username: admin | Password: admin123")
-    print("=" * 50 + "\n")
+    print("\n  BloodLife - http://localhost:5000")
+    print("  Admin: http://localhost:5000/admin (admin / admin123)\n")
     app.run(debug=True, port=5000)

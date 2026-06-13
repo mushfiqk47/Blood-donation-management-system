@@ -130,7 +130,6 @@
 </div>
 
 <script>
-var bloodColors = {'A+':'#ff385c','B+':'#ff385c','O+':'#ff385c','AB+':'#ff385c','A-':'#ff385c','B-':'#ff385c','O-':'#ff385c','AB-':'#ff385c'};
 var addModal = document.getElementById('addModal');
 var modalCloseBtn = document.getElementById('modalClose');
 var previousFocus = null;
@@ -189,12 +188,11 @@ function loadDashboard() {
             return;
         }
         body.innerHTML = donors.map(function(d) {
-            var c = '#ff385c';
             var msg = d.message ? (d.message.length > 40 ? d.message.substring(0, 40) + '...' : d.message) : '--';
             return '<tr>' +
                 '<td>#' + d.id + '</td>' +
                 '<td><strong>' + d.name + '</strong></td>' +
-                '<td><span class="donor-blood" style="background:' + c + '">' + d.blood_group + '</span></td>' +
+                '<td><span class="donor-blood">' + d.blood_group + '</span></td>' +
                 '<td>' + d.phone + '</td>' +
                 '<td>' + (d.email || '--') + '</td>' +
                 '<td>' + (d.age || '--') + '</td>' +
