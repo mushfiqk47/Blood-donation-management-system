@@ -118,10 +118,10 @@ def api_add_donor():
     try:
         with conn.cursor() as cur:
             cur.execute(
-                "INSERT INTO donors (name, blood_group, phone, email, location, message, age, gender) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+                "INSERT INTO donors (name, blood_group, phone, email, location, age, gender) VALUES (%s, %s, %s, %s, %s, %s, %s)",
                 (data['name'], data['blood_group'], data['phone'],
                  data.get('email', ''), data['location'],
-                 data.get('message', ''), data.get('age'), data.get('gender', ''))
+                 data.get('age'), data.get('gender', ''))
             )
             conn.commit()
         return jsonify({'message': 'Donor registered successfully!', 'id': cur.lastrowid}), 201
