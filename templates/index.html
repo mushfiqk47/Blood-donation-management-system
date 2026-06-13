@@ -1,17 +1,17 @@
 {% extends "base.html" %}
-{% block title %}BloodLife - Save Lives, Donate Blood{% endblock %}
+{% block title %}BloodLife - Find Blood Donors in Bangladesh{% endblock %}
 
 {% block content %}
 <section class="hero">
     <div class="container">
         <div class="hero-badge">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Every 2 seconds, someone needs blood
+            Urgent need? Search by blood group
         </div>
-        <h1>Every Drop <span>Saves a Life</span></h1>
-        <p>Join our community of blood donors. Find donors instantly or register to make a difference in someone's life.</p>
+        <h1>Find Blood <span>Donors Near You</span></h1>
+        <p>Search for donors by blood group and location, or register to be found when someone needs you.</p>
         <div class="hero-buttons">
-            <a href="/donors" class="btn btn-cta btn-lg">
+            <a href="/donors" class="btn btn-primary btn-lg">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/></svg>
                 Find Donors
             </a>
@@ -19,16 +19,6 @@
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
                 Become a Donor
             </a>
-        </div>
-        <div class="hero-visual" aria-hidden="true">
-            <div class="blood-pulse a-plus">A+</div>
-            <div class="blood-pulse b-plus">B+</div>
-            <div class="blood-pulse o-plus">O+</div>
-            <div class="blood-pulse ab-plus">AB+</div>
-            <div class="blood-pulse a-minus">A-</div>
-            <div class="blood-pulse b-minus">B-</div>
-            <div class="blood-pulse o-minus">O-</div>
-            <div class="blood-pulse ab-minus">AB-</div>
         </div>
     </div>
 </section>
@@ -44,21 +34,21 @@
                 <div class="stat-label">Registered Donors</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon green">
+                <div class="stat-icon blue">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                 </div>
                 <div class="stat-number" id="availableDonors">0</div>
                 <div class="stat-label">Available Now</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon orange">
+                <div class="stat-icon blue">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                 </div>
                 <div class="stat-number" id="totalLocations">0</div>
                 <div class="stat-label">Locations</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon purple">
+                <div class="stat-icon blue">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
                 </div>
                 <div class="stat-number">8</div>
@@ -72,7 +62,7 @@
     <div class="container">
         <div class="section-header">
             <h2>Available Blood Groups</h2>
-            <p>Select a blood group to find matching donors</p>
+            <p>Tap a blood group to find matching donors near you</p>
         </div>
         <div class="blood-grid" id="bloodGrid" role="group" aria-label="Blood group selection"></div>
     </div>
@@ -82,23 +72,23 @@
     <div class="container">
         <div class="section-header">
             <h2>How It Works</h2>
-            <p>Three simple steps to save a life</p>
+            <p>Here's how it works</p>
         </div>
         <div class="steps-grid">
             <div class="step-card">
                 <div class="step-number">1</div>
                 <h3>Register as Donor</h3>
-                <p>Fill in your details and blood group to join our donor network.</p>
+                <p>Share your blood group and contact info so people can find you when they need help.</p>
             </div>
             <div class="step-card">
                 <div class="step-number">2</div>
-                <h3>Get Matched</h3>
-                <p>When someone needs blood, they can find you through our search system.</p>
+                <h3>Get Found</h3>
+                <p>Patients and families search by blood group and location to find nearby donors.</p>
             </div>
             <div class="step-card">
                 <div class="step-number">3</div>
-                <h3>Save Lives</h3>
-                <p>Connect with the person in need and donate blood to save a life.</p>
+                <h3>Donate & Help</h3>
+                <p>Get contacted, show up, and donate. You could be the match someone is waiting for.</p>
             </div>
         </div>
     </div>

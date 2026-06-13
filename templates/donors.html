@@ -4,37 +4,44 @@
 {% block content %}
 <section class="page-header">
     <h1>Find Blood Donors</h1>
-    <p>Search and connect with available donors in your area</p>
+    <p>Search by name, location, or blood group</p>
 </section>
 
 <section class="donors-section" aria-label="Donor search">
     <div class="container">
         <div class="search-bar">
             <div class="search-input-wrap">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/></svg>
-                <input type="search" class="search-input" id="searchInput" placeholder="Search by name, location, or phone..." aria-label="Search donors">
+                <label class="search-label">Who</label>
+                <input type="search" class="search-input" id="searchInput" placeholder="Search donors..." aria-label="Search donors">
             </div>
-            <select class="filter-select" id="bloodFilter" aria-label="Filter by blood group">
-                <option value="">All Blood Groups</option>
-                <option value="A+">A+</option><option value="A-">A-</option>
-                <option value="B+">B+</option><option value="B-">B-</option>
-                <option value="AB+">AB+</option><option value="AB-">AB-</option>
-                <option value="O+">O+</option><option value="O-">O-</option>
-            </select>
-            <select class="filter-select" id="locationFilter" aria-label="Filter by location">
-                <option value="">All Locations</option>
-            </select>
+            <div class="filter-wrap">
+                <label class="search-label">Blood Group</label>
+                <select class="filter-select" id="bloodFilter" aria-label="Filter by blood group">
+                    <option value="">All Groups</option>
+                    <option value="A+">A+</option><option value="A-">A-</option>
+                    <option value="B+">B+</option><option value="B-">B-</option>
+                    <option value="AB+">AB+</option><option value="AB-">AB-</option>
+                    <option value="O+">O+</option><option value="O-">O-</option>
+                </select>
+            </div>
+            <div class="filter-wrap" style="border-left: 1px solid var(--hairline-soft);">
+                <label class="search-label">Where</label>
+                <select class="filter-select" id="locationFilter" aria-label="Filter by location">
+                    <option value="">Anywhere</option>
+                </select>
+            </div>
+            <button class="search-orb" id="searchBtn" aria-label="Search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/></svg>
+            </button>
         </div>
 
         <div class="donors-grid" id="donorsGrid" aria-live="polite">
-            <p class="loading">Loading donors...</p>
+            <p class="loading">Searching for donors...</p>
         </div>
     </div>
 </section>
 
 <script>
-var bloodColors = {'A+':'#2563EB','B+':'#DC2626','O+':'#059669','AB+':'#7C3AED','A-':'#0891B2','B-':'#D97706','O-':'#BE123C','AB-':'#4F46E5'};
-
 function loadDonors() {
     var search = document.getElementById('searchInput').value;
     var blood = document.getElementById('bloodFilter').value;
@@ -50,26 +57,21 @@ function loadDonors() {
         .then(function(donors) {
             var grid = document.getElementById('donorsGrid');
             if (donors.length === 0) {
-                grid.innerHTML = '<p class="no-results">No donors found. Try adjusting your search criteria.</p>';
+                grid.innerHTML = '<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/></svg></div><p>No donors found.</p></div>';
                 return;
             }
             grid.innerHTML = donors.map(function(d) {
-                var c = bloodColors[d.blood_group] || '#2563EB';
-                return '<div class="donor-card">' +
-                    '<div class="donor-header">' +
-                        '<div class="donor-avatar" style="background:' + c + '">' + d.name.charAt(0) + '</div>' +
-                        '<div>' +
-                            '<div class="donor-name">' + d.name + '</div>' +
-                            '<span class="donor-blood" style="background:' + c + '">' + d.blood_group + '</span>' +
+                return '<div class="donor-card" onclick="window.location=\'/donor/' + d.id + '\'">' +
+                    '<div class="donor-photo-wrapper">' +
+                        '<div class="donor-avatar">' + d.name.charAt(0) + '</div>' +
+                        '<div class="donor-blood-badge">' + d.blood_group + '</div>' +
+                    '</div>' +
+                    '<div class="donor-info">' +
+                        '<div class="donor-name">' + d.name + '</div>' +
+                        '<div class="donor-meta-row">' +
+                            '<span>' + d.location + '</span>' +
+                            '<span>' + d.phone + '</span>' +
                         '</div>' +
-                    '</div>' +
-                    '<div class="donor-meta">' +
-                        '<p><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/></svg>' + d.phone + '</p>' +
-                        '<p><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>' + d.location + '</p>' +
-                    '</div>' +
-                    '<div class="donor-actions">' +
-                        '<a href="tel:' + d.phone + '" class="btn btn-primary btn-sm" aria-label="Call ' + d.name + '">Call</a>' +
-                        '<a href="/donor/' + d.id + '" class="btn btn-outline btn-sm" aria-label="View ' + d.name + ' profile">View Profile</a>' +
                     '</div>' +
                 '</div>';
             }).join('');

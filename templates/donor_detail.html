@@ -4,7 +4,7 @@
 {% block content %}
 <section class="page-header">
     <h1>Donor Profile</h1>
-    <p>View donor details and get in touch</p>
+    <p>Contact the donor directly</p>
 </section>
 
 <section class="detail-section" aria-label="Donor profile">
@@ -17,7 +17,7 @@
 
 <script>
 var DONOR_ID = {{ donor_id }};
-var bloodColors = {'A+':'#2563EB','B+':'#DC2626','O+':'#059669','AB+':'#7C3AED','A-':'#0891B2','B-':'#D97706','O-':'#BE123C','AB-':'#4F46E5'};
+var bloodColors = {'A+':'#222222','B+':'#222222','O+':'#222222','AB+':'#222222','A-':'#222222','B-':'#222222','O-':'#222222','AB-':'#222222'};
 
 fetch('/api/donors/' + DONOR_ID)
     .then(function(r) { return r.json(); })
@@ -31,21 +31,19 @@ fetch('/api/donors/' + DONOR_ID)
 
         document.getElementById('donorDetail').innerHTML =
             '<div class="detail-header">' +
-                '<div class="detail-avatar" style="background:' + c + '">' + d.name.charAt(0) + '</div>' +
+                '<div class="detail-avatar">' + d.name.charAt(0) + '</div>' +
                 '<h2>' + d.name + '</h2>' +
-                '<span class="blood-badge-lg" style="background:' + c + '">' + d.blood_group + '</span>' +
+                '<span class="donor-blood-badge" style="position:static;display:inline-block;margin-top:12px">' + d.blood_group + '</span>' +
             '</div>' +
             '<div class="detail-body">' +
                 '<div class="detail-row"><span class="label">Phone</span><span class="value">' + d.phone + '</span></div>' +
-                '<div class="detail-row"><span class="label">Email</span><span class="value">' + (d.email || 'Not provided') + '</span></div>' +
+                '<div class="detail-row"><span class="label">Email</span><span class="value">' + (d.email || '--') + '</span></div>' +
                 '<div class="detail-row"><span class="label">Location</span><span class="value">' + d.location + '</span></div>' +
-                '<div class="detail-row"><span class="label">Address</span><span class="value">' + (d.address || 'Not provided') + '</span></div>' +
-                '<div class="detail-row"><span class="label">Age</span><span class="value">' + (d.age || 'Not provided') + '</span></div>' +
-                '<div class="detail-row"><span class="label">Gender</span><span class="value">' + (d.gender || 'Not provided') + '</span></div>' +
-                '<div class="detail-row"><span class="label">Last Donation</span><span class="value">' + (d.last_donation || 'Never') + '</span></div>' +
+                '<div class="detail-row"><span class="label">Age</span><span class="value">' + (d.age || '--') + '</span></div>' +
+                '<div class="detail-row"><span class="label">Gender</span><span class="value">' + (d.gender || '--') + '</span></div>' +
                 '<div class="detail-actions">' +
-                    '<a href="tel:' + d.phone + '" class="btn btn-cta" aria-label="Call ' + d.name + '"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/></svg>Call Now</a>' +
-                    '<a href="/donors" class="btn btn-outline"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Back to Donors</a>' +
+                    '<a href="tel:' + d.phone + '" class="btn btn-primary btn-block" aria-label="Call ' + d.name + '"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l2.27-2.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Call Donor</a>' +
+                    '<a href="/donors" class="btn btn-outline btn-block"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Back</a>' +
                 '</div>' +
             '</div>';
     })
