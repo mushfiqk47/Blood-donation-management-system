@@ -2,11 +2,6 @@
 {% block title %}Find Donors - BloodLife{% endblock %}
 
 {% block content %}
-<section class="page-header">
-    <h1>Find Blood Donors</h1>
-    <p>Search by name, location, or blood group</p>
-</section>
-
 <section class="donors-section" aria-label="Donor search">
     <div class="container">
         <div class="search-bar">
@@ -61,17 +56,27 @@ function loadDonors() {
                 return;
             }
             grid.innerHTML = donors.map(function(d) {
-                return '<div class="donor-card" onclick="window.location=\'/donor/' + d.id + '\'">' +
-                    '<div class="donor-photo-wrapper">' +
-                        '<div class="donor-avatar">' + d.name.charAt(0) + '</div>' +
-                        '<div class="donor-blood-badge">' + d.blood_group + '</div>' +
+                return '<div class="donor-card">' +
+                    '<div class="donor-card-top">' +
+                        '<div class="donor-avatar-sm">' + d.name.charAt(0) + '</div>' +
+                        '<div class="donor-card-header">' +
+                            '<div class="donor-name">' + d.name + '</div>' +
+                            '<span class="donor-blood-badge-sm">' + d.blood_group + '</span>' +
+                        '</div>' +
                     '</div>' +
-                    '<div class="donor-info">' +
-                        '<div class="donor-name">' + d.name + '</div>' +
-                        '<div class="donor-meta-row">' +
-                            '<span>' + d.location + '</span>' +
+                    '<div class="donor-card-details">' +
+                        '<div class="donor-detail-row">' +
+                            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>' +
                             '<span>' + d.phone + '</span>' +
                         '</div>' +
+                        '<div class="donor-detail-row">' +
+                            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>' +
+                            '<span>' + d.location + '</span>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="donor-card-actions">' +
+                        '<a href="tel:' + d.phone + '" class="btn btn-primary btn-sm" onclick="event.stopPropagation()">Call</a>' +
+                        '<a href="/donor/' + d.id + '" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">View Profile</a>' +
                     '</div>' +
                 '</div>';
             }).join('');

@@ -98,9 +98,9 @@
 fetch('/api/stats')
     .then(function(r) { return r.json(); })
     .then(function(data) {
-        animateCounter('totalDonors', data.total);
-        animateCounter('availableDonors', data.available);
-        animateCounter('totalLocations', data.locations.length);
+        document.getElementById('totalDonors').textContent = data.total;
+        document.getElementById('availableDonors').textContent = data.available;
+        document.getElementById('totalLocations').textContent = data.locations.length;
 
         var groups = ['A+','A-','B+','B-','AB+','AB-','O+','O-'];
         var grid = document.getElementById('bloodGrid');
@@ -117,20 +117,5 @@ fetch('/api/stats')
             grid.appendChild(card);
         });
     });
-
-function animateCounter(id, target) {
-    var el = document.getElementById(id);
-    var current = 0;
-    var step = Math.max(1, Math.ceil(target / 40));
-    var timer = setInterval(function() {
-        current += step;
-        if (current >= target) {
-            el.textContent = target;
-            clearInterval(timer);
-        } else {
-            el.textContent = current;
-        }
-    }, 30);
-}
 </script>
 {% endblock %}
