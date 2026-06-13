@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Donor Profile - BloodLife{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <h1>Donor Profile</h1>
+    <p>View donor details and get in touch</p>
+</section>
+
+<section class="detail-section" aria-label="Donor profile">
+    <div class="container">
+        <div class="detail-card" id="donorDetail">
+            <p class="loading">Loading...</p>
+        </div>
+    </div>
+</section>
+
+<script>
+var DONOR_ID = {{ donor_id }};
+var bloodColors = {'A+':'#2563EB','B+':'#DC2626','O+':'#059669','AB+':'#7C3AED','A-':'#0891B2','B-':'#D97706','O-':'#BE123C','AB-':'#4F46E5'};
+
+fetch('/api/donors/' + DONOR_ID)
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.error) {
+            document.getElementById('donorDetail').innerHTML = '<p class="no-results">Donor not found. <a href="/donors" class="text-primary">Go back</a></p>';
+            return;
+        }
+
+        var c = bloodColors[d.blood_group] || '#2563EB';
+
+        document.getElementById('donorDetail').innerHTML =
+            '<div class="detail-header">' +
+                '<div class="detail-avatar" style="background:' + c + '">' + d.name.charAt(0) + '</div>' +
+                '<h2>' + d.name + '</h2>' +
+                '<span class="blood-badge-lg" style="background:' + c + '">' + d.blood_group + '</span>' +
+            '</div>' +
+            '<div class="detail-body">' +
+                '<div class="detail-row"><span class="label">Phone</span><span class="value">' + d.phone + '</span></div>' +
+                '<div class="detail-row"><span class="label">Email</span><span class="value">' + (d.email || 'Not provided') + '</span></div>' +
+                '<div class="detail-row"><span class="label">Location</span><span class="value">' + d.location + '</span></div>' +
+                '<div class="detail-row"><span class="label">Address</span><span class="value">' + (d.address || 'Not provided') + '</span></div>' +
+                '<div class="detail-row"><span class="label">Age</span><span class="value">' + (d.age || 'Not provided') + '</span></div>' +
+                '<div class="detail-row"><span class="label">Gender</span><span class="value">' + (d.gender || 'Not provided') + '</span></div>' +
+                '<div class="detail-row"><span class="label">Last Donation</span><span class="value">' + (d.last_donation || 'Never') + '</span></div>' +
+                '<div class="detail-actions">' +
+                    '<a href="tel:' + d.phone + '" class="btn btn-cta" aria-label="Call ' + d.name + '"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/></svg>Call Now</a>' +
+                    '<a href="/donors" class="btn btn-outline"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Back to Donors</a>' +
+                '</div>' +
+            '</div>';
+    })
+    .catch(function() {
+        document.getElementById('donorDetail').innerHTML = '<p class="no-results">Error loading donor data.</p>';
+    });
+</script>
+{% endblock %}

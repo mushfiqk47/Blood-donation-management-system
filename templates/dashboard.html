@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard - BloodLife{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <h1>Admin Dashboard</h1>
+    <p>Manage donors and view statistics</p>
+</section>
+
+<section class="dashboard-section" aria-label="Admin dashboard">
+    <div class="container">
+        <div class="dashboard-top">
+            <button class="btn btn-cta" id="openModalBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+                Add Donor
+            </button>
+            <button onclick="fetch('/api/logout',{method:'POST'}).then(function(){window.location='/admin'})" class="btn btn-ghost">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+                Logout
+            </button>
+        </div>
+
+        <div class="stats-grid mb-3">
+            <div class="stat-card">
+                <div class="stat-icon blue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+                <div class="stat-number" id="dTotal">--</div>
+                <div class="stat-label">Total Donors</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+                <div class="stat-number" id="dAvail">--</div>
+                <div class="stat-label">Available</div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Blood</th>
+                        <th scope="col">Phone</th>
+                        <th scope="col">Location</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="donorsBody">
+                    <tr><td colspan="6" class="loading">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<div class="modal hidden" id="addModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-content">
+        <button class="modal-close" id="modalClose" aria-label="Close dialog">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
+        </button>
+        <h2 id="modalTitle">Add New Donor</h2>
+        <form id="addForm">
+            <div class="form-group">
+                <label for="a_name">Name <span class="req">*</span></label>
+                <input type="text" id="a_name" required>
+            </div>
+            <div class="form-group">
+                <label for="a_blood">Blood Group <span class="req">*</span></label>
+                <select id="a_blood" required>
+                    <option value="">Select</option>
+                    <option value="A+">A+</option><option value="A-">A-</option>
+                    <option value="B+">B+</option><option value="B-">B-</option>
+                    <option value="AB+">AB+</option><option value="AB-">AB-</option>
+                    <option value="O+">O+</option><option value="O-">O-</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="a_phone">Phone <span class="req">*</span></label>
+                <input type="tel" id="a_phone" required>
+            </div>
+            <div class="form-group">
+                <label for="a_location">Location <span class="req">*</span></label>
+                <input type="text" id="a_location" required>
+            </div>
+            <div class="form-group">
+                <label for="a_email">Email</label>
+                <input type="email" id="a_email">
+            </div>
+            <div class="form-group">
+                <label for="a_message">Message</label>
+                <textarea id="a_message" name="message"></textarea>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-cta">Save</button>
+                <button type="button" class="btn btn-ghost cancelBtn">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+var bloodColors = {'A+':'#2563EB','B+':'#DC2626','O+':'#059669','AB+':'#7C3AED','A-':'#0891B2','B-':'#D97706','O-':'#BE123C','AB-':'#4F46E5'};
+var addModal = document.getElementById('addModal');
+var modalCloseBtn = document.getElementById('modalClose');
+var previousFocus = null;
+
+function openModal() {
+    previousFocus = document.activeElement;
+    addModal.classList.remove('hidden');
+    document.body.classList.add('modal-open');
+    var firstInput = addModal.querySelector('input, select, textarea');
+    if (firstInput) firstInput.focus();
+}
+
+function closeModal() {
+    addModal.classList.add('hidden');
+    document.body.classList.remove('modal-open');
+    if (previousFocus) previousFocus.focus();
+}
+
+document.getElementById('openModalBtn').addEventListener('click', openModal);
+modalCloseBtn.addEventListener('click', closeModal);
+document.querySelector('.cancelBtn').addEventListener('click', closeModal);
+
+addModal.addEventListener('click', function(e) {
+    if (e.target === addModal) closeModal();
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && !addModal.classList.contains('hidden')) {
+        closeModal();
+    }
+});
+
+addModal.addEventListener('keydown', function(e) {
+    if (e.key !== 'Tab') return;
+    var focusable = addModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    if (focusable.length === 0) return;
+    var first = focusable[0];
+    var last = focusable[focusable.length - 1];
+    if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+    } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+});
+
+function loadDashboard() {
+    fetch('/api/stats').then(function(r){return r.json()}).then(function(data) {
+        document.getElementById('dTotal').textContent = data.total;
+        document.getElementById('dAvail').textContent = data.available;
+    });
+
+    fetch('/api/donors').then(function(r){return r.json()}).then(function(donors) {
+        var body = document.getElementById('donorsBody');
+        if (donors.length === 0) {
+            body.innerHTML = '<tr><td colspan="6" class="no-results">No donors yet.</td></tr>';
+            return;
+        }
+        body.innerHTML = donors.map(function(d) {
+            var c = bloodColors[d.blood_group] || '#2563EB';
+            return '<tr>' +
+                '<td>#' + d.id + '</td>' +
+                '<td><strong>' + d.name + '</strong></td>' +
+                '<td><span class="donor-blood" style="background:' + c + '">' + d.blood_group + '</span></td>' +
+                '<td>' + d.phone + '</td>' +
+                '<td>' + d.location + '</td>' +
+                '<td><button onclick="deleteDonor(' + d.id + ')" class="btn btn-sm btn-danger-outline" aria-label="Delete ' + d.name + '">Delete</button></td>' +
+            '</tr>';
+        }).join('');
+    });
+}
+
+document.getElementById('addForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    fetch('/api/donors', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+            name: document.getElementById('a_name').value,
+            blood_group: document.getElementById('a_blood').value,
+            phone: document.getElementById('a_phone').value,
+            location: document.getElementById('a_location').value,
+            email: document.getElementById('a_email').value,
+            message: document.getElementById('a_message').value
+        })
+    }).then(function(r){return r.json()}).then(function() {
+        closeModal();
+        document.getElementById('addForm').reset();
+        loadDashboard();
+    });
+});
+
+function deleteDonor(id) {
+    if (!confirm('Delete this donor?')) return;
+    fetch('/api/donors/' + id, {method:'DELETE'}).then(function() { loadDashboard(); });
+}
+
+loadDashboard();
+</script>
+{% endblock %}
