@@ -25,8 +25,7 @@ python app.py
 ```
 
 ### Open in Browser
-- **Home:** http://localhost:5000
-- **Find Donors:** http://localhost:5000/donors
+- **Find Donors:** http://localhost:5000 (home redirects here)
 - **Register:** http://localhost:5000/register
 - **Admin:** http://localhost:5000/admin (username: `admin`, password: `admin123`)
 
@@ -42,10 +41,8 @@ blood-donation-python/
 │   └── init.sql            # Database setup script
 ├── templates/
 │   ├── base.html           # Common layout
-│   ├── index.html          # Home page
-│   ├── donors.html         # Find donors
+│   ├── donors.html         # Find donors (table view)
 │   ├── register.html       # Register form
-│   ├── donor_detail.html   # Donor profile
 │   ├── admin.html          # Admin login
 │   └── dashboard.html      # Admin dashboard
 └── static/
@@ -59,10 +56,8 @@ blood-donation-python/
 
 | Feature | Description |
 |---------|-------------|
-| **Home Page** | Shows stats and blood groups |
-| **Find Donors** | Search by name/location, filter by blood group |
+| **Find Donors** | Search by name/location/phone, filter by blood group via pill buttons, all data shown in a table |
 | **Register** | Form to become a blood donor |
-| **Donor Profile** | View full donor details |
 | **Admin Panel** | Login, view all donors, add/delete donors |
 
 ---
@@ -80,8 +75,7 @@ blood-donation-python/
 | Method | URL | Description |
 |--------|-----|-------------|
 | GET | `/api/stats` | Get statistics |
-| GET | `/api/donors` | List all donors (supports `?search=`, `?blood=`, `?location=`) |
-| GET | `/api/donors/<id>` | Get one donor |
+| GET | `/api/donors` | List all donors (supports `?search=`, `?blood=`) |
 | POST | `/api/donors` | Add new donor (JSON body) |
 | DELETE | `/api/donors/<id>` | Delete donor (admin only) |
 | POST | `/api/login` | Admin login |

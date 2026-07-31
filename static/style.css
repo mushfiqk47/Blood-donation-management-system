@@ -486,6 +486,34 @@ a { text-decoration: none; color: inherit; }
 
 .filter-select:focus { outline: none; border-color: var(--ink); }
 
+.blood-btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.blood-btn {
+    padding: 10px 16px;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-full);
+    background: var(--canvas);
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 0.9rem;
+    font-family: inherit;
+    cursor: pointer;
+    min-height: 44px;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.blood-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+.blood-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--on-primary);
+}
+
 .search-orb {
     width: 48px;
     height: 48px;
@@ -853,7 +881,7 @@ a { text-decoration: none; color: inherit; }
     background: var(--bg-white);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    overflow: hidden;
+    overflow-x: auto;
 }
 
 .data-table { width: 100%; border-collapse: collapse; table-layout: fixed; }

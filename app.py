@@ -34,7 +34,7 @@ def get_db():
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    return redirect('/donors')
 
 @app.route('/donors')
 def donors_page():
@@ -43,10 +43,6 @@ def donors_page():
 @app.route('/register')
 def register_page():
     return render_template('register.html')
-
-@app.route('/donor/<int:donor_id>')
-def donor_detail_page(donor_id):
-    return render_template('donor_detail.html', donor_id=donor_id)
 
 @app.route('/admin')
 def admin_page():
@@ -110,19 +106,6 @@ def api_donors():
             query += " ORDER BY id DESC"
             cur.execute(query, params)
             return jsonify(cur.fetchall())
-    finally:
-        conn.close()
-
-@app.route('/api/donors/<int:donor_id>')
-def api_donor(donor_id):
-    conn = get_db()
-    try:
-        with conn.cursor() as cur:
-            cur.execute("SELECT * FROM donors WHERE id = %s", (donor_id,))
-            donor = cur.fetchone()
-            if donor:
-                return jsonify(donor)
-            return jsonify({'error': 'Donor not found'}), 404
     finally:
         conn.close()
 

@@ -15,7 +15,7 @@
 
     <nav class="navbar" role="navigation" aria-label="Main navigation">
         <div class="container nav-container">
-            <a href="/" class="logo" aria-label="BloodLife Home">
+            <a href="/donors" class="logo" aria-label="BloodLife Find Donors">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
                 BloodLife
             </a>
@@ -27,7 +27,6 @@
                 </svg>
             </button>
             <ul class="nav-links" id="navLinks">
-                <li><a href="/">Home</a></li>
                 <li><a href="/donors">Find Donors</a></li>
                 <li><a href="/register">Become Donor</a></li>
                 <li><a href="/admin" class="btn btn-primary btn-sm">Admin</a></li>
@@ -38,42 +37,6 @@
     <main id="main-content" tabindex="-1">
         {% block content %}{% endblock %}
     </main>
-
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div>
-                    <h4>BloodLife</h4>
-                    <ul>
-                        <li><a href="/">About us</a></li>
-                        <li><a href="/donors">Find Donors</a></li>
-                        <li><a href="/register">Become a Donor</a></li>
-                        <li><a href="#">How it works</a></li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h4>Blood Groups</h4>
-                    <div class="blood-tags">
-                        <span class="blood-tag">A+</span>
-                        <span class="blood-tag">A-</span>
-                        <span class="blood-tag">B+</span>
-                        <span class="blood-tag">B-</span>
-                        <span class="blood-tag">AB+</span>
-                        <span class="blood-tag">AB-</span>
-                        <span class="blood-tag">O+</span>
-                        <span class="blood-tag">O-</span>
-                    </div>
-                </div>
-                <div>
-                    <h4>Contact</h4>
-                    <div class="footer-contact">info@bloodlife.com</div>
-                    <div class="footer-contact">+880 1234-567890</div>
-                    <div class="footer-contact">Dhaka, Bangladesh</div>
-                </div>
-            </div>
-        </div>
-    </footer>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
