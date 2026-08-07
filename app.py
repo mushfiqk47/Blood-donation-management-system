@@ -2,21 +2,41 @@
 # BloodLife - Blood Donation Website (MySQL Database Version)
 # ============================================================
 
+import os
+
 import pymysql
 from flask import Flask, render_template, request, jsonify, session, redirect
 
 # --- App Setup ---
 app = Flask(__name__)
-app.secret_key = 'bloodlife-secret-key-2026'
 
-# --- Database Config ---
+app.secret_key = os.environ.get("SECRET_KEY")
+
+required_db_vars = [
+    "DB_HOST",
+    "DB_USER",
+    "DB_PASSWORD"
+]
+
+missing_vars = [var for var in required_db_vars if not os.environ.get(var)]
+
+if missing_vars:
+    raise RuntimeError(
+        f"Missing required environment variables: {', '.join(missing_vars)}"
+    )
+
+# --- Database Configuration ---
 DB_CONFIG = {
-    'host': 'localhost',
-    'user': 'root',
-    'password': '',
-    'database': 'blood_donation',
-    'charset': 'utf8mb4',
-    'cursorclass': pymysql.cursors.DictCursor
+    "host": os.environ.get("DB_HOST"),
+    "port": int(os.environ.get("DB_PORT", 3306)),
+    "user": os.environ.get("DB_USER"),
+    "password": os.environ.get("DB_PASSWORD"),
+    "database": os.environ.get("DB_NAME", "blood_donation"),
+    "charset": "utf8mb4",
+    "cursorclass": pymysql.cursors.DictCursor,
+    "ssl": {
+        "ca": os.environ.get("DB_SSL_CA")
+    }
 }
 
 # --- Admin Credentials (from database) ---
