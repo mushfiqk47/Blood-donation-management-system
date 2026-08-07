@@ -26,7 +26,7 @@ load_dotenv()
 
 app = Flask(__name__)
 
-app.secret_key = os.environ.get("SECRET_KEY")
+app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key")
 
 
 # ============================================================
@@ -34,12 +34,9 @@ app.secret_key = os.environ.get("SECRET_KEY")
 # ============================================================
 
 required_vars = [
-    "SECRET_KEY",
     "DB_HOST",
     "DB_USER",
     "DB_PASSWORD",
-    "ADMIN_USER",
-    "ADMIN_PASS",
 ]
 
 missing_vars = [
@@ -57,8 +54,8 @@ if missing_vars:
 # ADMIN CREDENTIALS
 # ============================================================
 
-ADMIN_USER = os.environ["ADMIN_USER"]
-ADMIN_PASS = os.environ["ADMIN_PASS"]
+ADMIN_USER = os.environ.get("ADMIN_USER", "admin")
+ADMIN_PASS = os.environ.get("ADMIN_PASS", "admin123")
 
 
 # ============================================================
@@ -67,18 +64,16 @@ ADMIN_PASS = os.environ["ADMIN_PASS"]
 
 AIVEN_CA_CERT = os.environ.get("AIVEN_CA_CERT")
 
-if not AIVEN_CA_CERT:
-    raise RuntimeError(
-        "AIVEN_CA_CERT environment variable is missing."
+CA_FILE = os.environ.get("DB_SSL_CA")
+
+if AIVEN_CA_CERT:
+    CA_FILE = os.path.join(
+        tempfile.gettempdir(),
+        "aiven-ca.pem"
     )
 
-CA_FILE = os.path.join(
-    tempfile.gettempdir(),
-    "aiven-ca.pem"
-)
-
-with open(CA_FILE, "w", encoding="utf-8") as f:
-    f.write(AIVEN_CA_CERT)
+    with open(CA_FILE, "w", encoding="utf-8") as f:
+        f.write(AIVEN_CA_CERT)
 
 
 # ============================================================
@@ -93,10 +88,12 @@ DB_CONFIG = {
     "database": os.environ.get("DB_NAME", "blood_donation"),
     "charset": "utf8mb4",
     "cursorclass": pymysql.cursors.DictCursor,
-    "ssl": {
+}
+
+if CA_FILE:
+    DB_CONFIG["ssl"] = {
         "ca": CA_FILE
     }
-}
 
 
 # ============================================================
