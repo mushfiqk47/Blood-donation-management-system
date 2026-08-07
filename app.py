@@ -65,41 +65,20 @@ ADMIN_PASS = os.environ["ADMIN_PASS"]
 # AIVEN CA CERTIFICATE
 # ============================================================
 
-"""
-Local development:
-    DB_SSL_CA=C:\Users\MUSHFIQ\Downloads\ca.pem
-
-Render:
-    AIVEN_CA_CERT=<full certificate contents>
-
-If AIVEN_CA_CERT exists, we create a temporary certificate
-file and use it.
-
-Otherwise, we use the local DB_SSL_CA path.
-"""
-
 AIVEN_CA_CERT = os.environ.get("AIVEN_CA_CERT")
 
-if AIVEN_CA_CERT:
-    # Render / Linux
-    CA_FILE = os.path.join(
-        tempfile.gettempdir(),
-        "aiven-ca.pem"
-    )
-
-    with open(CA_FILE, "w", encoding="utf-8") as f:
-        f.write(AIVEN_CA_CERT)
-
-else:
-    # Local development
-    CA_FILE = os.environ.get("DB_SSL_CA")
-
-
-if not CA_FILE or not os.path.exists(CA_FILE):
+if not AIVEN_CA_CERT:
     raise RuntimeError(
-        "Aiven CA certificate is not configured correctly. "
-        "Set AIVEN_CA_CERT on Render or DB_SSL_CA locally."
+        "AIVEN_CA_CERT environment variable is missing."
     )
+
+CA_FILE = os.path.join(
+    tempfile.gettempdir(),
+    "aiven-ca.pem"
+)
+
+with open(CA_FILE, "w", encoding="utf-8") as f:
+    f.write(AIVEN_CA_CERT)
 
 
 # ============================================================
