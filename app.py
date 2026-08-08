@@ -24,8 +24,13 @@ ADMIN_PASS = os.environ.get('ADMIN_PASS', 'admin123')
 
 # --- Supabase Python SDK Client ---
 supabase = None
-supabase_url = os.environ.get("SUPABASE_URL")
-supabase_key = os.environ.get("SUPABASE_KEY")
+supabase_url = os.environ.get("SUPABASE_URL") or os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
+supabase_key = (
+    os.environ.get("SUPABASE_KEY")
+    or os.environ.get("SUPABASE_ANON_KEY")
+    or os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+    or os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+)
 
 if supabase_url and supabase_key:
     try:
@@ -36,7 +41,12 @@ if supabase_url and supabase_key:
 
 
 def get_db():
-    db_url = os.environ.get('DATABASE_URL')
+    db_url = (
+        os.environ.get('DATABASE_URL')
+        or os.environ.get('POSTGRES_URL')
+        or os.environ.get('POSTGRES_PRISMA_URL')
+        or os.environ.get('POSTGRES_URL_NON_POOLING')
+    )
     if db_url:
         if db_url.startswith("postgres://"):
             db_url = db_url.replace("postgres://", "postgresql://", 1)
@@ -45,16 +55,23 @@ def get_db():
             db_url += f"{separator}sslmode=require"
         return psycopg2.connect(db_url, cursor_factory=psycopg2.extras.RealDictCursor)
 
-    db_host = os.environ.get('DB_HOST')
+    db_host = os.environ.get('DB_HOST') or os.environ.get('POSTGRES_HOST')
     if db_host:
         return psycopg2.connect(
             host=db_host,
-            user=os.environ.get('DB_USER', 'postgres'),
-            password=os.environ.get('DB_PASSWORD', ''),
-            dbname=os.environ.get('DB_NAME', 'postgres'),
-            port=int(os.environ.get('DB_PORT', 5432)),
+            user=os.environ.get('DB_USER') or os.environ.get('POSTGRES_USER', 'postgres'),
+            password=os.environ.get('DB_PASSWORD') or os.environ.get('POSTGRES_PASSWORD', ''),
+            dbname=os.environ.get('DB_NAME') or os.environ.get('POSTGRES_DATABASE', 'postgres'),
+            port=int(os.environ.get('DB_PORT') or os.environ.get('POSTGRES_PORT', 5432)),
             sslmode='require',
             cursor_factory=psycopg2.extras.RealDictCursor
+        )
+
+    # Check if running in a cloud/serverless environment (e.g., Vercel)
+    if os.environ.get('VERCEL') or os.environ.get('VERCEL_ENV') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME'):
+        raise ConnectionError(
+            "Supabase / Database environment variables are missing in Vercel. "
+            "Please set SUPABASE_URL and SUPABASE_KEY in Vercel Settings -> Environment Variables."
         )
 
     # Local fallback to MySQL
