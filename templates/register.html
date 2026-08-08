@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}Register - BloodLife{% endblock %}
+
+{% block content %}
+<section class="register-section">
+    <div class="container">
+        <div class="form-card">
+            <h1>Become a Donor</h1>
+            <p>Your blood type could be exactly what someone nearby needs right now.</p>
+
+            <div id="formAlert" class="hidden"></div>
+
+            <form id="registerForm" novalidate>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="regName">Full Name <span class="req">*</span></label>
+                        <input type="text" id="regName" name="name" autocomplete="name" required placeholder="Your full name">
+                        <span class="error-msg">Please enter your full name</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="regBlood">Blood Group <span class="req">*</span></label>
+                        <select id="regBlood" name="blood_group" required>
+                            <option value="">Select Blood Group</option>
+                            <option value="A+">A+</option><option value="A-">A-</option>
+                            <option value="B+">B+</option><option value="B-">B-</option>
+                            <option value="AB+">AB+</option><option value="AB-">AB-</option>
+                            <option value="O+">O+</option><option value="O-">O-</option>
+                        </select>
+                        <span class="error-msg">Please select your blood group</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="regPhone">Phone Number <span class="req">*</span></label>
+                        <input type="tel" id="regPhone" name="phone" autocomplete="tel" placeholder="01XXXXXXXXX" required>
+                        <span class="error-msg">Enter a valid phone number</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="regEmail">Email Address</label>
+                        <input type="email" id="regEmail" name="email" autocomplete="email" placeholder="your@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="regLocation">Location <span class="req">*</span></label>
+                        <input type="text" id="regLocation" name="location" placeholder="e.g. Dhanmondi, Dhaka" required>
+                        <span class="error-msg">Please enter your location</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="regAge">Age</label>
+                        <input type="number" id="regAge" name="age" min="18" max="65" placeholder="18-65">
+                        <span class="helper">Must be between 18 and 65</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="regGender">Gender</label>
+                        <select id="regGender" name="gender">
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group full">
+                        <label for="regMessage">Message</label>
+                        <textarea id="regMessage" name="message" placeholder="Anything you want people to know? (optional)"></textarea>
+                    </div>
+                </div>
+                <div class="form-submit">
+                    <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                        Register Now
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<script>
+var fields = [
+    { id: 'regName', validate: function(v) { return v.trim().length > 0; } },
+    { id: 'regBlood', validate: function(v) { return v.length > 0; } },
+    { id: 'regPhone', validate: function(v) { return /^01[3-9]\d{8}$/.test(v.trim()); } },
+    { id: 'regLocation', validate: function(v) { return v.trim().length > 0; } }
+];
+
+fields.forEach(function(f) {
+    var el = document.getElementById(f.id);
+    el.addEventListener('blur', function() {
+        var group = this.closest('.form-group');
+        if (!f.validate(this.value)) {
+            group.classList.add('has-error');
+        } else {
+            group.classList.remove('has-error');
+        }
+    });
+    el.addEventListener('input', function() {
+        if (f.validate(this.value)) {
+            this.closest('.form-group').classList.remove('has-error');
+        }
+    });
+});
+
+document.getElementById('registerForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var valid = true;
+
+    fields.forEach(function(f) {
+        var el = document.getElementById(f.id);
+        var group = el.closest('.form-group');
+        if (!f.validate(el.value)) {
+            group.classList.add('has-error');
+            valid = false;
+        }
+    });
+
+    if (!valid) return;
+
+    var btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<svg class="spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Registering...';
+
+    var data = {
+        name: document.getElementById('regName').value,
+        blood_group: document.getElementById('regBlood').value,
+        phone: document.getElementById('regPhone').value,
+        email: document.getElementById('regEmail').value,
+        location: document.getElementById('regLocation').value,
+        age: document.getElementById('regAge').value,
+        gender: document.getElementById('regGender').value,
+        message: document.getElementById('regMessage').value
+    };
+
+    fetch('/api/donors', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(result) {
+        var alert = document.getElementById('formAlert');
+        if (result.id) {
+            btn.disabled = false;
+            btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Registered Successfully!';
+
+            alert.className = 'alert alert-success';
+            alert.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Registration successful! Thank you for becoming a donor.';
+
+            document.getElementById('registerForm').reset();
+
+            setTimeout(function() {
+                btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg> Register as Donor';
+                alert.classList.add('hidden');
+            }, 4000);
+        } else {
+            btn.disabled = false;
+            btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg> Register as Donor';
+
+            alert.className = 'alert alert-error';
+            alert.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" x2="9" y1="9" y2="15"/><line x1="9" x2="15" y1="9" y2="15"/></svg> ' + result.error;
+        }
+    })
+    .catch(function() {
+        btn.disabled = false;
+        btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg> Register as Donor';
+
+        var alert = document.getElementById('formAlert');
+        alert.className = 'alert alert-error';
+        alert.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" x2="9" y1="9" y2="15"/><line x1="9" x2="15" y1="9" y2="15"/></svg> Error connecting to server';
+    });
+});
+</script>
+{% endblock %}

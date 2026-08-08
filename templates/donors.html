@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}Find Donors - BloodLife{% endblock %}
+
+{% block content %}
+<section class="donors-section" aria-label="Donor search">
+    <div class="container">
+        <div class="search-bar">
+            <div class="search-input-wrap">
+                <label class="search-label">Who</label>
+                <input type="search" class="search-input" id="searchInput" placeholder="Search donors..." aria-label="Search donors">
+            </div>
+            <div class="filter-wrap">
+                <span class="search-label">Blood Group</span>
+                <div class="blood-btn-group" id="bloodBtns" role="group" aria-label="Filter by blood group">
+                    <button type="button" class="blood-btn active" data-blood="">All</button>
+                    <button type="button" class="blood-btn" data-blood="A+">A+</button>
+                    <button type="button" class="blood-btn" data-blood="A-">A-</button>
+                    <button type="button" class="blood-btn" data-blood="B+">B+</button>
+                    <button type="button" class="blood-btn" data-blood="B-">B-</button>
+                    <button type="button" class="blood-btn" data-blood="AB+">AB+</button>
+                    <button type="button" class="blood-btn" data-blood="AB-">AB-</button>
+                    <button type="button" class="blood-btn" data-blood="O+">O+</button>
+                    <button type="button" class="blood-btn" data-blood="O-">O-</button>
+                </div>
+            </div>
+            <button class="search-orb" id="searchBtn" aria-label="Search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/></svg>
+            </button>
+        </div>
+
+        <div class="table-container" aria-live="polite">
+            <table class="data-table donors-table">
+                <colgroup>
+                    <col class="col-name">
+                    <col class="col-blood">
+                    <col class="col-phone">
+                    <col class="col-email">
+                    <col class="col-location">
+                    <col class="col-age">
+                    <col class="col-gender">
+                    <col class="col-msg">
+                    <col class="col-actions">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Blood</th>
+                        <th scope="col">Phone</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Location</th>
+                        <th scope="col">Age</th>
+                        <th scope="col">Gender</th>
+                        <th scope="col">Message</th>
+                        <th scope="col">Contact</th>
+                    </tr>
+                </thead>
+                <tbody id="donorsBody">
+                    <tr><td colspan="9" class="loading">Searching for donors...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<script>
+var selectedBlood = '';
+
+function loadDonors() {
+    var search = document.getElementById('searchInput').value;
+    var blood = selectedBlood;
+
+    var url = '/api/donors?';
+    if (search) url += 'search=' + encodeURIComponent(search) + '&';
+    if (blood) url += 'blood=' + encodeURIComponent(blood) + '&';
+
+    fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(donors) {
+            var body = document.getElementById('donorsBody');
+            if (donors.length === 0) {
+                body.innerHTML = '<tr><td colspan="9" class="no-results">No donors found.</td></tr>';
+                return;
+            }
+            body.innerHTML = donors.map(function(d) {
+                var msg = d.message ? (d.message.length > 40 ? d.message.substring(0, 40) + '...' : d.message) : '--';
+                return '<tr>' +
+                    '<td><strong>' + d.name + '</strong></td>' +
+                    '<td><span class="donor-blood" style="background:#ff385c">' + d.blood_group + '</span></td>' +
+                    '<td>' + d.phone + '</td>' +
+                    '<td>' + (d.email || '--') + '</td>' +
+                    '<td>' + d.location + '</td>' +
+                    '<td>' + (d.age || '--') + '</td>' +
+                    '<td>' + (d.gender || '--') + '</td>' +
+                    '<td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + (d.message || '') + '">' + msg + '</td>' +
+                    '<td><a href="tel:' + d.phone + '" class="btn btn-sm btn-primary" aria-label="Call ' + d.name + '">Call</a></td>' +
+                '</tr>';
+            }).join('');
+        });
+}
+
+var urlParams = new URLSearchParams(window.location.search);
+var urlBlood = urlParams.get('blood');
+if (urlBlood) {
+    selectedBlood = urlBlood;
+    document.querySelectorAll('.blood-btn').forEach(function(b) {
+        b.classList.toggle('active', b.getAttribute('data-blood') === urlBlood);
+    });
+}
+
+document.getElementById('bloodBtns').addEventListener('click', function(e) {
+    var btn = e.target.closest('.blood-btn');
+    if (!btn) return;
+    selectedBlood = btn.getAttribute('data-blood');
+    document.querySelectorAll('.blood-btn').forEach(function(b) {
+        b.classList.toggle('active', b === btn);
+    });
+    loadDonors();
+});
+
+document.getElementById('searchInput').addEventListener('input', loadDonors);
+
+loadDonors();
+</script>
+{% endblock %}

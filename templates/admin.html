@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Admin Login - BloodLife{% endblock %}
+
+{% block content %}
+<section class="register-section">
+    <div class="container">
+        <div class="form-card form-card-centered">
+            <h1 class="text-center">Admin Login</h1>
+            <p class="text-center">Access the admin dashboard</p>
+            <div id="alert" class="alert hidden" role="alert"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" required placeholder="admin" autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required placeholder="admin123" autocomplete="current-password">
+                </div>
+                <div class="form-submit">
+                    <button type="submit" class="btn btn-primary btn-lg btn-block" id="loginBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
+                        Login
+                    </button>
+                </div>
+            </form>
+            <p class="text-center text-hint">Default: admin / admin123</p>
+        </div>
+    </div>
+</section>
+
+<script>
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var btn = document.getElementById('loginBtn');
+    btn.disabled = true;
+
+    fetch('/api/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value
+        })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.message) {
+            window.location = '/admin/dashboard';
+        } else {
+            var alert = document.getElementById('alert');
+            alert.className = 'alert alert-error';
+            alert.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" x2="9" y1="9" y2="15"/><line x1="9" x2="15" y1="9" y2="15"/></svg>' + data.error;
+            alert.classList.remove('hidden');
+            btn.disabled = false;
+        }
+    });
+});
+</script>
+{% endblock %}
