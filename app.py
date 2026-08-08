@@ -1,5 +1,5 @@
 # ============================================================
-# BloodLife - Blood Donation Website (PostgreSQL/Supabase & Vercel Ready)
+# BloodLife - Blood Donation Website (Supabase SDK & Postgres Ready)
 # ============================================================
 
 import os
@@ -18,19 +18,19 @@ from flask import Flask, render_template, request, jsonify, session, redirect
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'bloodlife-secret-key-2026')
 
-# --- Admin Credentials (from environment or defaults) ---
+# --- Admin Credentials ---
 ADMIN_USER = os.environ.get('ADMIN_USER', 'admin')
 ADMIN_PASS = os.environ.get('ADMIN_PASS', 'admin123')
 
-# --- Supabase Client (Python SDK) ---
+# --- Supabase Python SDK Client ---
 supabase = None
-if os.environ.get("SUPABASE_URL") and os.environ.get("SUPABASE_KEY"):
+supabase_url = os.environ.get("SUPABASE_URL")
+supabase_key = os.environ.get("SUPABASE_KEY")
+
+if supabase_url and supabase_key:
     try:
         from supabase import create_client, Client
-        supabase: Client = create_client(
-            os.environ.get("SUPABASE_URL"),
-            os.environ.get("SUPABASE_KEY")
-        )
+        supabase: Client = create_client(supabase_url, supabase_key)
     except Exception as e:
         print(f"Supabase client init note: {e}")
 
@@ -40,6 +40,9 @@ def get_db():
     if db_url:
         if db_url.startswith("postgres://"):
             db_url = db_url.replace("postgres://", "postgresql://", 1)
+        if "sslmode" not in db_url:
+            separator = "&" if "?" in db_url else "?"
+            db_url += f"{separator}sslmode=require"
         return psycopg2.connect(db_url, cursor_factory=psycopg2.extras.RealDictCursor)
 
     db_host = os.environ.get('DB_HOST')
@@ -50,6 +53,7 @@ def get_db():
             password=os.environ.get('DB_PASSWORD', ''),
             dbname=os.environ.get('DB_NAME', 'postgres'),
             port=int(os.environ.get('DB_PORT', 5432)),
+            sslmode='require',
             cursor_factory=psycopg2.extras.RealDictCursor
         )
 
@@ -96,26 +100,48 @@ def admin_dashboard():
 
 @app.route('/api/stats')
 def api_stats():
-    conn = get_db()
     try:
-        with conn.cursor() as cur:
-            cur.execute("SELECT COUNT(*) as total, COUNT(CASE WHEN is_available THEN 1 END) as available FROM donors")
-            row = cur.fetchone()
+        if supabase:
+            res = supabase.table('donors').select('*').execute()
+            donors = res.data or []
+            total = len(donors)
+            available = sum(1 for d in donors if d.get('is_available'))
+            locations = sorted(list(set(d['location'] for d in donors if d.get('location'))))
+            blood_counts = {}
+            for d in donors:
+                bg = d.get('blood_group')
+                if bg:
+                    blood_counts[bg] = blood_counts.get(bg, 0) + 1
+            return jsonify({
+                'total': total,
+                'available': available,
+                'locations': locations,
+                'blood_counts': blood_counts
+            })
+        
+        conn = get_db()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("SELECT COUNT(*) as total, COUNT(CASE WHEN is_available THEN 1 END) as available FROM donors")
+                row = cur.fetchone()
 
-            cur.execute("SELECT blood_group, COUNT(*) as count FROM donors GROUP BY blood_group")
-            blood_counts = {r['blood_group']: r['count'] for r in cur.fetchall()}
+                cur.execute("SELECT blood_group, COUNT(*) as count FROM donors GROUP BY blood_group")
+                blood_counts = {r['blood_group']: r['count'] for r in cur.fetchall()}
 
-            cur.execute("SELECT DISTINCT location FROM donors")
-            locations = [r['location'] for r in cur.fetchall()]
+                cur.execute("SELECT DISTINCT location FROM donors")
+                locations = [r['location'] for r in cur.fetchall()]
 
-        return jsonify({
-            'total': row['total'] or 0,
-            'available': int(row['available'] or 0),
-            'locations': locations,
-            'blood_counts': blood_counts
-        })
-    finally:
-        conn.close()
+            return jsonify({
+                'total': row['total'] or 0,
+                'available': int(row['available'] or 0),
+                'locations': locations,
+                'blood_counts': blood_counts
+            })
+        finally:
+            conn.close()
+    except Exception as e:
+        return jsonify({'error': str(e), 'details': 'Database connection failed. Please check Vercel environment variables.'}), 500
+
 
 @app.route('/api/donors')
 def api_donors():
@@ -123,27 +149,49 @@ def api_donors():
     blood = request.args.get('blood', '')
     location = request.args.get('location', '').lower()
 
-    conn = get_db()
     try:
-        with conn.cursor() as cur:
-            query = "SELECT * FROM donors WHERE 1=1"
-            params = []
-
+        if supabase:
+            query = supabase.table('donors').select('*')
             if blood:
-                query += " AND blood_group = %s"
-                params.append(blood)
-            if location:
-                query += " AND LOWER(location) LIKE %s"
-                params.append(f'%{location}%')
-            if search:
-                query += " AND (LOWER(name) LIKE %s OR LOWER(location) LIKE %s OR phone LIKE %s)"
-                params.extend([f'%{search}%', f'%{search}%', f'%{search}%'])
+                query = query.eq('blood_group', blood)
+            res = query.order('id', desc=True).execute()
+            donors = res.data or []
 
-            query += " ORDER BY id DESC"
-            cur.execute(query, params)
-            return jsonify(cur.fetchall())
-    finally:
-        conn.close()
+            if location:
+                donors = [d for d in donors if location in d.get('location', '').lower()]
+            if search:
+                donors = [
+                    d for d in donors
+                    if search in d.get('name', '').lower()
+                    or search in d.get('location', '').lower()
+                    or search in d.get('phone', '')
+                ]
+            return jsonify(donors)
+
+        conn = get_db()
+        try:
+            with conn.cursor() as cur:
+                query = "SELECT * FROM donors WHERE 1=1"
+                params = []
+
+                if blood:
+                    query += " AND blood_group = %s"
+                    params.append(blood)
+                if location:
+                    query += " AND LOWER(location) LIKE %s"
+                    params.append(f'%{location}%')
+                if search:
+                    query += " AND (LOWER(name) LIKE %s OR LOWER(location) LIKE %s OR phone LIKE %s)"
+                    params.extend([f'%{search}%', f'%{search}%', f'%{search}%'])
+
+                query += " ORDER BY id DESC"
+                cur.execute(query, params)
+                return jsonify(cur.fetchall())
+        finally:
+            conn.close()
+    except Exception as e:
+        return jsonify({'error': str(e), 'details': 'Database query failed.'}), 500
+
 
 @app.route('/api/donors', methods=['POST'])
 def api_add_donor():
@@ -152,55 +200,84 @@ def api_add_donor():
     if not data.get('name') or not data.get('blood_group') or not data.get('phone') or not data.get('location'):
         return jsonify({'error': 'Name, blood group, phone, and location are required'}), 400
 
-    conn = get_db()
     try:
-        with conn.cursor() as cur:
-            is_postgres = type(conn).__module__.startswith('psycopg2')
-            params = (
-                data['name'],
-                data['blood_group'],
-                data['phone'],
-                data.get('email', ''),
-                data['location'],
-                data.get('address', ''),
-                data.get('message', ''),
-                data.get('age'),
-                data.get('gender', '')
-            )
-            
-            if is_postgres:
-                cur.execute(
-                    """INSERT INTO donors (name, blood_group, phone, email, location, address, message, age, gender)
-                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id""",
-                    params
-                )
-                donor_id = cur.fetchone()['id']
-            else:
-                cur.execute(
-                    """INSERT INTO donors (name, blood_group, phone, email, location, address, message, age, gender)
-                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-                    params
-                )
-                donor_id = cur.lastrowid
+        if supabase:
+            payload = {
+                'name': data['name'],
+                'blood_group': data['blood_group'],
+                'phone': data['phone'],
+                'email': data.get('email', ''),
+                'location': data['location'],
+                'address': data.get('address', ''),
+                'message': data.get('message', ''),
+                'age': int(data['age']) if data.get('age') else None,
+                'gender': data.get('gender', ''),
+                'is_available': True
+            }
+            res = supabase.table('donors').insert(payload).execute()
+            inserted = res.data[0] if res.data else {}
+            return jsonify({'message': 'Donor registered successfully!', 'id': inserted.get('id')}), 201
 
-            conn.commit()
-        return jsonify({'message': 'Donor registered successfully!', 'id': donor_id}), 201
-    finally:
-        conn.close()
+        conn = get_db()
+        try:
+            with conn.cursor() as cur:
+                is_postgres = type(conn).__module__.startswith('psycopg2')
+                params = (
+                    data['name'],
+                    data['blood_group'],
+                    data['phone'],
+                    data.get('email', ''),
+                    data['location'],
+                    data.get('address', ''),
+                    data.get('message', ''),
+                    data.get('age'),
+                    data.get('gender', '')
+                )
+                
+                if is_postgres:
+                    cur.execute(
+                        """INSERT INTO donors (name, blood_group, phone, email, location, address, message, age, gender)
+                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id""",
+                        params
+                    )
+                    donor_id = cur.fetchone()['id']
+                else:
+                    cur.execute(
+                        """INSERT INTO donors (name, blood_group, phone, email, location, address, message, age, gender)
+                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                        params
+                    )
+                    donor_id = cur.lastrowid
+
+                conn.commit()
+            return jsonify({'message': 'Donor registered successfully!', 'id': donor_id}), 201
+        finally:
+            conn.close()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 @app.route('/api/donors/<int:donor_id>', methods=['DELETE'])
 def api_delete_donor(donor_id):
     if not session.get('logged_in'):
         return jsonify({'error': 'Not logged in'}), 401
 
-    conn = get_db()
     try:
-        with conn.cursor() as cur:
-            cur.execute("DELETE FROM donors WHERE id = %s", (donor_id,))
-            conn.commit()
-        return jsonify({'message': 'Donor deleted'})
-    finally:
-        conn.close()
+        if supabase:
+            supabase.table('donors').delete().eq('id', donor_id).execute()
+            return jsonify({'message': 'Donor deleted'})
+
+        conn = get_db()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("DELETE FROM donors WHERE id = %s", (donor_id,))
+                conn.commit()
+            return jsonify({'message': 'Donor deleted'})
+        finally:
+            conn.close()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 # =====================
 # ADMIN LOGIN/LOGOUT
@@ -225,7 +302,7 @@ def api_logout():
 
 if __name__ == '__main__':
     print("\n" + "=" * 50)
-    print("  BloodLife - Database Ready (MySQL / PostgreSQL Supabase)")
+    print("  BloodLife - Database Ready (MySQL / Supabase SDK / PostgreSQL)")
     print("  Open: http://localhost:5000")
     print("  Admin: http://localhost:5000/admin")
     print("=" * 50 + "\n")
