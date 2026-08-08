@@ -158,13 +158,13 @@ def api_donors():
             donors = res.data or []
 
             if location:
-                donors = [d for d in donors if location in d.get('location', '').lower()]
+                donors = [d for d in donors if location in (d.get('location') or '').lower()]
             if search:
                 donors = [
                     d for d in donors
-                    if search in d.get('name', '').lower()
-                    or search in d.get('location', '').lower()
-                    or search in d.get('phone', '')
+                    if search in (d.get('name') or '').lower()
+                    or search in (d.get('location') or '').lower()
+                    or search in (d.get('phone') or '')
                 ]
             return jsonify(donors)
 
