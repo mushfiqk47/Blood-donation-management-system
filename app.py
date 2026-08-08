@@ -1,31 +1,67 @@
 # ============================================================
-# BloodLife - Blood Donation Website (MySQL Database Version)
+# BloodLife - Blood Donation Website (PostgreSQL/Supabase & Vercel Ready)
 # ============================================================
 
+import os
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 import pymysql
+import psycopg2
+import psycopg2.extras
 from flask import Flask, render_template, request, jsonify, session, redirect
 
 # --- App Setup ---
 app = Flask(__name__)
-app.secret_key = 'bloodlife-secret-key-2026'
+app.secret_key = os.environ.get('SECRET_KEY', 'bloodlife-secret-key-2026')
 
-# --- Database Config ---
-DB_CONFIG = {
-    'host': 'localhost',
-    'user': 'root',
-    'password': '',
-    'database': 'blood_donation',
-    'charset': 'utf8mb4',
-    'cursorclass': pymysql.cursors.DictCursor
-}
+# --- Admin Credentials (from environment or defaults) ---
+ADMIN_USER = os.environ.get('ADMIN_USER', 'admin')
+ADMIN_PASS = os.environ.get('ADMIN_PASS', 'admin123')
 
-# --- Admin Credentials (from database) ---
-ADMIN_USER = 'admin'
-ADMIN_PASS = 'admin123'
+# --- Supabase Client (Python SDK) ---
+supabase = None
+if os.environ.get("SUPABASE_URL") and os.environ.get("SUPABASE_KEY"):
+    try:
+        from supabase import create_client, Client
+        supabase: Client = create_client(
+            os.environ.get("SUPABASE_URL"),
+            os.environ.get("SUPABASE_KEY")
+        )
+    except Exception as e:
+        print(f"Supabase client init note: {e}")
 
 
 def get_db():
-    return pymysql.connect(**DB_CONFIG)
+    db_url = os.environ.get('DATABASE_URL')
+    if db_url:
+        if db_url.startswith("postgres://"):
+            db_url = db_url.replace("postgres://", "postgresql://", 1)
+        return psycopg2.connect(db_url, cursor_factory=psycopg2.extras.RealDictCursor)
+
+    db_host = os.environ.get('DB_HOST')
+    if db_host:
+        return psycopg2.connect(
+            host=db_host,
+            user=os.environ.get('DB_USER', 'postgres'),
+            password=os.environ.get('DB_PASSWORD', ''),
+            dbname=os.environ.get('DB_NAME', 'postgres'),
+            port=int(os.environ.get('DB_PORT', 5432)),
+            cursor_factory=psycopg2.extras.RealDictCursor
+        )
+
+    # Local fallback to MySQL
+    return pymysql.connect(
+        host='localhost',
+        user='root',
+        password='',
+        database='blood_donation',
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor
+    )
 
 
 # =====================
@@ -63,7 +99,7 @@ def api_stats():
     conn = get_db()
     try:
         with conn.cursor() as cur:
-            cur.execute("SELECT COUNT(*) as total, SUM(is_available) as available FROM donors")
+            cur.execute("SELECT COUNT(*) as total, COUNT(CASE WHEN is_available THEN 1 END) as available FROM donors")
             row = cur.fetchone()
 
             cur.execute("SELECT blood_group, COUNT(*) as count FROM donors GROUP BY blood_group")
@@ -119,23 +155,35 @@ def api_add_donor():
     conn = get_db()
     try:
         with conn.cursor() as cur:
-            cur.execute(
-                """INSERT INTO donors (name, blood_group, phone, email, location, address, message, age, gender)
-                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-                (
-                    data['name'],
-                    data['blood_group'],
-                    data['phone'],
-                    data.get('email', ''),
-                    data['location'],
-                    data.get('address', ''),
-                    data.get('message', ''),
-                    data.get('age'),
-                    data.get('gender', '')
-                )
+            is_postgres = type(conn).__module__.startswith('psycopg2')
+            params = (
+                data['name'],
+                data['blood_group'],
+                data['phone'],
+                data.get('email', ''),
+                data['location'],
+                data.get('address', ''),
+                data.get('message', ''),
+                data.get('age'),
+                data.get('gender', '')
             )
+            
+            if is_postgres:
+                cur.execute(
+                    """INSERT INTO donors (name, blood_group, phone, email, location, address, message, age, gender)
+                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id""",
+                    params
+                )
+                donor_id = cur.fetchone()['id']
+            else:
+                cur.execute(
+                    """INSERT INTO donors (name, blood_group, phone, email, location, address, message, age, gender)
+                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                    params
+                )
+                donor_id = cur.lastrowid
+
             conn.commit()
-            donor_id = cur.lastrowid
         return jsonify({'message': 'Donor registered successfully!', 'id': donor_id}), 201
     finally:
         conn.close()
@@ -177,9 +225,8 @@ def api_logout():
 
 if __name__ == '__main__':
     print("\n" + "=" * 50)
-    print("  BloodLife - MySQL Database Version")
+    print("  BloodLife - Database Ready (MySQL / PostgreSQL Supabase)")
     print("  Open: http://localhost:5000")
     print("  Admin: http://localhost:5000/admin")
-    print("  Username: admin | Password: admin123")
     print("=" * 50 + "\n")
     app.run(debug=True, port=5000)
