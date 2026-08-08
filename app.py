@@ -23,13 +23,17 @@ ADMIN_USER = os.environ.get('ADMIN_USER', 'admin')
 ADMIN_PASS = os.environ.get('ADMIN_PASS', 'admin123')
 
 # --- Supabase Python SDK Client ---
+DEFAULT_SUPABASE_URL = "https://tnkdaqyuxdkwskpdokdo.supabase.co"
+DEFAULT_SUPABASE_KEY = "sb_publishable_cxYg7EaFvP08ClVAGisxLg_7fQNrk4f"
+
 supabase = None
-supabase_url = os.environ.get("SUPABASE_URL") or os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
+supabase_url = os.environ.get("SUPABASE_URL") or os.environ.get("NEXT_PUBLIC_SUPABASE_URL") or DEFAULT_SUPABASE_URL
 supabase_key = (
     os.environ.get("SUPABASE_KEY")
     or os.environ.get("SUPABASE_ANON_KEY")
     or os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
     or os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+    or DEFAULT_SUPABASE_KEY
 )
 
 if supabase_url and supabase_key:
