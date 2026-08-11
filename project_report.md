@@ -1,3 +1,44 @@
+<!-- ============================================================ -->
+<!-- COVER PAGE -->
+<!-- ============================================================ -->
+
+<div align="center">
+
+# PROJECT REPORT ON
+# BLOODLIFE MANAGEMENT SYSTEM
+### A Web-Based Blood Donation & Donor Tracking Platform
+
+---
+
+### **SUBMITTED BY (GROUP MEMBERS)**
+
+| SL | Student Name | Student ID |
+|:---:|:---|:---|
+| **1** | Md. Mushfiq Kabir | 42250202488 |
+| **2** | Most. Umme Kulsum | 42250202504 |
+| **3** | Nowrin Kabir Agni | 42250202491 |
+
+<br/>
+
+### **SUBMITTED TO**
+**M. A. Jobayer Bin Bakkre**  
+Department of Computer Science & Engineering  
+**Northern University Bangladesh**  
+
+<br/>
+
+**Date of Submission:** 14 August 2026
+
+</div>
+
+<br/>
+<hr/>
+<br/>
+
+<!-- ============================================================ -->
+<!-- MAIN REPORT CONTENT -->
+<!-- ============================================================ -->
+
 # Project Report: BloodLife Management System
 
 ## Executive Summary
