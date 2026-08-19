@@ -47,7 +47,8 @@ blood-donation-python/
 │   └── dashboard.html      # Admin dashboard
 └── static/
     ├── style.css           # All styles
-    └── script.js           # Navigation toggle
+    └── js/
+        └── script.js       # Main JavaScript (Navigation, Search, Register, Admin, Dashboard)
 ```
 
 ---
