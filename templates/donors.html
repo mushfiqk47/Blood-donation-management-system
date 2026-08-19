@@ -60,7 +60,6 @@
                     <col class="col-age">
                     <col class="col-gender">
                     <col class="col-msg">
-                    <col class="col-actions">
                 </colgroup>
                 <thead>
                     <tr>
@@ -72,13 +71,12 @@
                         <th scope="col">Age</th>
                         <th scope="col">Gender</th>
                         <th scope="col">Message</th>
-                        <th scope="col">Contact</th>
                     </tr>
                 </thead>
                 <!-- Table rows are dynamically populated via JavaScript fetch to /api/donors -->
                 <tbody id="donorsBody">
                     <tr>
-                        <td colspan="9" class="loading">Searching for donors...</td>
+                        <td colspan="8" class="loading">Searching for donors...</td>
                     </tr>
                 </tbody>
             </table>

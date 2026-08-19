@@ -398,6 +398,16 @@ a {
 .data-table colgroup .col-msg { width: 12%; }
 .data-table colgroup .col-actions { width: 8%; }
 
+/* Find Donors Table Column Widths (8 columns) */
+.donors-table colgroup .col-name { width: 16%; }
+.donors-table colgroup .col-blood { width: 9%; }
+.donors-table colgroup .col-phone { width: 14%; }
+.donors-table colgroup .col-email { width: 16%; }
+.donors-table colgroup .col-location { width: 16%; }
+.donors-table colgroup .col-age { width: 7%; }
+.donors-table colgroup .col-gender { width: 8%; }
+.donors-table colgroup .col-msg { width: 14%; }
+
 /* ============================================================
    7. FORMS & INPUTS (REGISTER & LOGIN)
    ============================================================ */

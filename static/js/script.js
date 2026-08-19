@@ -79,7 +79,7 @@ function initDonorsPage() {
             .then(function(donors) {
                 // Step 3: Handle empty results
                 if (!Array.isArray(donors) || donors.length === 0) {
-                    donorsBody.innerHTML = '<tr><td colspan="9" class="no-results">No donors found matching your search.</td></tr>';
+                    donorsBody.innerHTML = '<tr><td colspan="8" class="no-results">No donors found matching your search.</td></tr>';
                     return;
                 }
 
@@ -98,13 +98,12 @@ function initDonorsPage() {
                         '<td>' + (donor.age != null ? escapeHtml(String(donor.age)) : '--') + '</td>' +
                         '<td>' + (donor.gender ? escapeHtml(donor.gender) : '--') + '</td>' +
                         '<td title="' + escapeHtml(donor.message || '') + '">' + escapeHtml(messageText) + '</td>' +
-                        '<td><a href="tel:' + encodeURIComponent(donor.phone) + '" class="btn btn-sm btn-primary" aria-label="Call ' + escapeHtml(donor.name) + '">Call</a></td>' +
                     '</tr>';
                 }).join('');
             })
             .catch(function(error) {
                 console.error('Error fetching donors:', error);
-                donorsBody.innerHTML = '<tr><td colspan="9" class="no-results">Unable to load donor list. Please try again.</td></tr>';
+                donorsBody.innerHTML = '<tr><td colspan="8" class="no-results">Unable to load donor list. Please try again.</td></tr>';
             });
     }
 
