@@ -51,29 +51,6 @@ List all donors. Supports filters.
 
 ---
 
-## GET /api/donors/:id
-Get one donor by ID.
-
-**Example:** `GET /api/donors/1`
-
-**Response:**
-```json
-{
-    "id": 1,
-    "name": "Ahmed Rahman",
-    "blood_group": "A+",
-    "phone": "01712345678",
-    "location": "Dhanmondi, Dhaka"
-}
-```
-
-**Error (404):**
-```json
-{"error": "Donor not found"}
-```
-
----
-
 ## POST /api/donors
 Add a new donor.
 
